@@ -63,23 +63,13 @@ curl -s -X POST http://localhost:3200/api/v1/memory \
 
 **Verify storage:** Check the response for `"thoughts_contributed": 1`. If 0, the save failed — do NOT proceed with /clear.
 
-## Step 4: Execute /clear
+## Step 4: Instruct User to Clear
 
-Only after verified storage:
+Only after verified storage, tell the user:
 
-```
-/clear
-```
+**State saved to brain. Please type `/clear` now to reset context, then run `/xpo.claude.monitor {role}` to recover.**
 
-## Step 5: Recover
-
-After /clear, the agent starts fresh. The next prompt should be:
-
-```
-/xpo.claude.monitor {role}
-```
-
-This triggers the standard recovery protocol which will find the state snapshot you just saved.
+**CRITICAL: Do NOT output `/clear` on its own line.** Claude Code interprets bare slash commands in agent output as executable commands. Always embed slash commands in a sentence or use inline code formatting. Never output a bare `/clear` or any slash command as standalone text.
 
 ---
 
