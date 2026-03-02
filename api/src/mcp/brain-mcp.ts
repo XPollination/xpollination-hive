@@ -8,11 +8,12 @@ const AGENT_ID = "thomas";
 const AGENT_NAME = "Thomas Pichler";
 const MCP_PORT = 3201;
 
-async function callBrain(prompt: string, context?: string, session_id?: string, full_content?: boolean): Promise<unknown> {
+async function callBrain(prompt: string, context?: string, session_id?: string, full_content?: boolean, read_only?: boolean): Promise<unknown> {
   const body: Record<string, unknown> = { prompt, agent_id: AGENT_ID, agent_name: AGENT_NAME };
   if (context) body.context = context;
   if (session_id) body.session_id = session_id;
   if (full_content) body.full_content = true;
+  if (read_only) body.read_only = true;
 
   const res = await fetch(BRAIN_API, {
     method: "POST",
@@ -50,9 +51,10 @@ function createMcpServer(): McpServer {
       context: z.string().optional().describe("What you are currently working on — changes retrieval direction"),
       session_id: z.string().optional().describe("Reuse from previous call for conversation continuity"),
       include_full_content: z.boolean().optional().describe("When true, sources include full content instead of 80-char preview"),
+      read_only: z.boolean().optional().describe("When true, query is not persisted as a thought — use for research sessions to avoid noise"),
     },
-    async ({ prompt, context, session_id, include_full_content }) => {
-      const data = await callBrain(prompt, context, session_id, include_full_content ?? undefined) as Record<string, unknown>;
+    async ({ prompt, context, session_id, include_full_content, read_only }) => {
+      const data = await callBrain(prompt, context, session_id, include_full_content ?? undefined, read_only ?? undefined) as Record<string, unknown>;
       return { content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }] };
     }
   );
