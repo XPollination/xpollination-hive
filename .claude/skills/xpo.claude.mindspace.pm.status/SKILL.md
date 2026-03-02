@@ -94,11 +94,13 @@ For each task in DECISIONS NEEDED + REVIEWS PENDING (ordered by category, then u
    - Key DNA fields: `findings`, `implementation`, `qa_review`, `pdsa_review`, `qa_design_review`
    - Review chain trail (who reviewed, who passed)
 
-3. **WAIT for Thomas's decision** using AskUserQuestion:
-   - For approval: options are "Approve" and "Rework" (+ Other)
-   - For review: options are "Complete" and "Rework" (+ Other)
+3. **WAIT for Thomas's decision as plain text input.**
+   Do NOT use AskUserQuestion — it produces false positives (returns empty answers without human interaction, documented 2026-03-02).
+   Present the task details, then STOP and wait for Thomas to type his decision.
+   Thomas will reply with "approve", "rework", "complete", or give specific feedback.
+   Do NOT assume any answer. Do NOT proceed until Thomas's actual text response appears.
 
-4. **Execute the transition** based on decision:
+4. **Execute the transition** based on Thomas's typed decision:
    - Approve: `DATABASE_PATH=$DB node $CLI transition <slug> approved liaison`
    - Complete: `DATABASE_PATH=$DB node $CLI transition <slug> complete liaison`
    - Rework: `DATABASE_PATH=$DB node $CLI transition <slug> rework liaison`
