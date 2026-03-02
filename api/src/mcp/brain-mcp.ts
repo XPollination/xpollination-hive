@@ -4,12 +4,15 @@ import { createServer, IncomingMessage, ServerResponse } from "node:http";
 import { z } from "zod";
 
 const BRAIN_API = "http://localhost:3200/api/v1/memory";
-const AGENT_ID = "thomas";
-const AGENT_NAME = "Thomas Pichler";
+// Per-user config via env vars — defaults to Thomas for backward compatibility
+// Config template: set BRAIN_API_KEY, BRAIN_AGENT_ID, BRAIN_AGENT_NAME per user
+const BRAIN_API_KEY = process.env.BRAIN_API_KEY || "default-thomas-key";
+const BRAIN_AGENT_ID = process.env.BRAIN_AGENT_ID || "thomas";
+const BRAIN_AGENT_NAME = process.env.BRAIN_AGENT_NAME || "Thomas Pichler";
 const MCP_PORT = 3201;
 
 async function callBrain(prompt: string, context?: string, session_id?: string, full_content?: boolean, read_only?: boolean): Promise<unknown> {
-  const body: Record<string, unknown> = { prompt, agent_id: AGENT_ID, agent_name: AGENT_NAME };
+  const body: Record<string, unknown> = { prompt, agent_id: BRAIN_AGENT_ID, agent_name: BRAIN_AGENT_NAME };
   if (context) body.context = context;
   if (session_id) body.session_id = session_id;
   if (full_content) body.full_content = true;
@@ -17,7 +20,10 @@ async function callBrain(prompt: string, context?: string, session_id?: string, 
 
   const res = await fetch(BRAIN_API, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${BRAIN_API_KEY}`,
+    },
     body: JSON.stringify(body),
   });
 
@@ -29,7 +35,9 @@ async function callBrain(prompt: string, context?: string, session_id?: string, 
 }
 
 async function getThought(thought_id: string): Promise<unknown> {
-  const res = await fetch(`${BRAIN_API}/thought/${thought_id}`);
+  const res = await fetch(`${BRAIN_API}/thought/${thought_id}`, {
+    headers: { "Authorization": `Bearer ${BRAIN_API_KEY}` },
+  });
   if (!res.ok) {
     const err = await res.text();
     throw new Error(`Brain API error ${res.status}: ${err}`);

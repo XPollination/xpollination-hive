@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "xpollination-brain": {
+      "url": "http://YOUR_BRAIN_HOST:3201/mcp",
+      "env": {
+        "BRAIN_API_KEY": "YOUR_API_KEY_HERE",
+        "BRAIN_AGENT_ID": "YOUR_USER_ID",
+        "BRAIN_AGENT_NAME": "Your Display Name"
+      }
+    }
+  }
+}
