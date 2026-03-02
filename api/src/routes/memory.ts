@@ -1,7 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import crypto from "crypto";
 import { embed } from "../services/embedding.js";
-import { think, retrieve, applyImplicitFeedback, highways, getExistingTags, getThoughtById, getLineage, updateThoughtMetadata, listUncategorizedThoughts, ThoughtError, type ThoughtCategory, type SourceRef } from "../services/thoughtspace.js";
+import { think, retrieve, applyImplicitFeedback, highways, getExistingTags, getThoughtById, getLineage, updateThoughtMetadata, listUncategorizedThoughts, listDomainSummaries, ThoughtError, type ThoughtCategory, type SourceRef } from "../services/thoughtspace.js";
 import { getAgentQueryCount, getSessionReturnedIds, getRecentQueriesByAgent } from "../services/database.js";
 
 // --- Contribution Threshold (Section 3.5) ---
@@ -567,6 +567,25 @@ export async function memoryRoutes(app: FastifyInstance): Promise<void> {
       } catch (err) {
         return reply.status(500).send({
           error: { code: "INTERNAL_ERROR", message: "Failed to list uncategorized thoughts" },
+        });
+      }
+    },
+  );
+
+  // List domain summaries (for agent discovery)
+  app.get<{ Querystring: { limit?: string; offset?: string } }>(
+    "/api/v1/memory/domains",
+    async (request, reply) => {
+      const limit = Math.min(parseInt(request.query.limit ?? "50", 10) || 50, 100);
+      const rawOffset = request.query.offset;
+      const offset = rawOffset ? (isNaN(Number(rawOffset)) ? rawOffset : Number(rawOffset)) : undefined;
+
+      try {
+        const result = await listDomainSummaries(limit, offset);
+        return reply.send(result);
+      } catch (err) {
+        return reply.status(500).send({
+          error: { code: "INTERNAL_ERROR", message: "Failed to list domain summaries" },
         });
       }
     },

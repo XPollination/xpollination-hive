@@ -85,7 +85,7 @@ export async function ensureThoughtSpace(): Promise<void> {
 
 // --- Types ---
 
-export type ThoughtCategory = "state_snapshot" | "decision_record" | "operational_learning" | "task_outcome" | "correction" | "uncategorized" | "transition_marker" | "design_decision";
+export type ThoughtCategory = "state_snapshot" | "decision_record" | "operational_learning" | "task_outcome" | "correction" | "uncategorized" | "transition_marker" | "design_decision" | "domain_summary";
 
 export interface SourceRef {
   type: "task" | "file" | "commit" | "url";
@@ -805,7 +805,7 @@ async function getThoughtsByIds(thoughtIds: string[]): Promise<Record<string, un
 
 const VALID_CATEGORIES: ThoughtCategory[] = [
   "state_snapshot", "decision_record", "operational_learning", "task_outcome",
-  "correction", "uncategorized", "transition_marker", "design_decision",
+  "correction", "uncategorized", "transition_marker", "design_decision", "domain_summary",
 ];
 
 export async function updateThoughtMetadata(
@@ -855,6 +855,41 @@ export async function listUncategorizedThoughts(
       content_preview: ((pay.content as string) ?? "").substring(0, 200),
       thought_category: (pay.thought_category as string) ?? "uncategorized",
       topic: (pay.topic as string) ?? null,
+    };
+  });
+
+  return {
+    thoughts,
+    next_offset: scrollResult.next_page_offset ?? null,
+  };
+}
+
+// --- List domain summaries ---
+
+export async function listDomainSummaries(
+  limit: number = 50,
+  offset?: string | number,
+): Promise<{ thoughts: Array<{ thought_id: string; topic: string; content_preview: string; access_count: number; created_at: string }>; next_offset: string | number | null }> {
+  const scrollResult = await client.scroll(COLLECTION, {
+    filter: {
+      must: [
+        { key: "thought_category", match: { value: "domain_summary" } },
+      ],
+    },
+    limit,
+    with_payload: true,
+    with_vector: false,
+    ...(offset !== undefined ? { offset } : {}),
+  });
+
+  const thoughts = scrollResult.points.map((p) => {
+    const pay = p.payload as Record<string, unknown>;
+    return {
+      thought_id: String(p.id),
+      topic: (pay.topic as string) ?? "unknown",
+      content_preview: ((pay.content as string) ?? "").substring(0, 120),
+      access_count: (pay.access_count as number) ?? 0,
+      created_at: (pay.created_at as string) ?? "",
     };
   });
 
