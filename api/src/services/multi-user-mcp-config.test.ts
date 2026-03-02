@@ -58,11 +58,12 @@ describe("AC-MUMC4: MCP connector adds Authorization Bearer header", () => {
 // --- AC-MUMC5: Default values for backward compatibility ---
 
 describe("AC-MUMC5: Default values preserve backward compatibility", () => {
-  it("BRAIN_API_KEY has Thomas default", async () => {
+  it("BRAIN_API_KEY is required (no hardcoded fallback)", async () => {
     const fs = await import("node:fs");
     const source = fs.readFileSync(MCP_PATH, "utf-8");
-    // Should default to Thomas's key when env var not set
-    expect(source).toContain("default-thomas-key");
+    // After credential rotation: BRAIN_API_KEY must be required, no hardcoded fallback
+    expect(source).toContain("BRAIN_API_KEY");
+    expect(source).toMatch(/BRAIN_API_KEY.*required/i);
   });
 
   it("BRAIN_AGENT_ID has Thomas default", async () => {

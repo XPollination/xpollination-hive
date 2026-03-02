@@ -89,6 +89,7 @@ else
     test_result "Brain API health" "PASS"
     for cat in principle procedure terminology knowledge_gap; do
         RESP=$(curl -s -X POST "$BRAIN_URL" -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${BRAIN_API_KEY:-}" \
             -d "{\"prompt\": \"TEST CATEGORY: Verifying $cat thought category is accepted by brain API\", \"agent_id\": \"agent-qa\", \"agent_name\": \"QA\", \"thought_category\": \"$cat\", \"read_only\": true}")
         # read_only:true means no storage, but the API should still accept the category without error
         if echo "$RESP" | grep -q '"status":"error"'; then

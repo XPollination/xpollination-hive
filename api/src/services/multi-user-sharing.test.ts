@@ -20,7 +20,7 @@ import { describe, it, expect } from "vitest";
 
 const API_URL = "http://localhost:3200";
 const QDRANT_URL = "http://localhost:6333";
-const THOMAS_KEY = "default-thomas-key";
+const THOMAS_KEY = process.env.BRAIN_API_KEY || "test-key-not-for-production";
 
 // Maria's key from SQLite
 let MARIA_KEY = "";

@@ -112,6 +112,7 @@ HANDOFF="${HANDOFF:0:8000}"
 # --- Contribute to brain (silent, best-effort) ---
 curl -s --max-time 3 -X POST "$BRAIN_URL" \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer ${BRAIN_API_KEY:-}" \
   -d "$(python3 -c "
 import json, sys
 print(json.dumps({

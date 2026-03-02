@@ -47,7 +47,7 @@ function initSchema(db: Database.Database): void {
     );
 
     INSERT OR IGNORE INTO users (user_id, display_name, api_key, qdrant_collection)
-    VALUES ('thomas', 'Thomas Pichler', 'default-thomas-key', 'thought_space');
+    VALUES ('thomas', 'Thomas Pichler', 'MUST_SET_VIA_PROVISION', 'thought_space');
   `);
 }
 

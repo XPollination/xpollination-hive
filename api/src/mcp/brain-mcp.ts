@@ -4,9 +4,12 @@ import { createServer, IncomingMessage, ServerResponse } from "node:http";
 import { z } from "zod";
 
 const BRAIN_API = "http://localhost:3200/api/v1/memory";
-// Per-user config via env vars — defaults to Thomas for backward compatibility
+// Per-user config via env vars — BRAIN_API_KEY is required
 // Config template: set BRAIN_API_KEY, BRAIN_AGENT_ID, BRAIN_AGENT_NAME per user
-const BRAIN_API_KEY = process.env.BRAIN_API_KEY || "default-thomas-key";
+const BRAIN_API_KEY = process.env.BRAIN_API_KEY;
+if (!BRAIN_API_KEY) {
+  throw new Error("BRAIN_API_KEY environment variable is required but not set");
+}
 const BRAIN_AGENT_ID = process.env.BRAIN_AGENT_ID || "thomas";
 const BRAIN_AGENT_NAME = process.env.BRAIN_AGENT_NAME || "Thomas Pichler";
 const MCP_PORT = 3201;

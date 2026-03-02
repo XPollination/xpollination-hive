@@ -52,9 +52,11 @@ const queryData = JSON.stringify({
   read_only: true
 });
 
+const authHeaders = { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(queryData) };
+if (process.env.BRAIN_API_KEY) authHeaders["Authorization"] = "Bearer " + process.env.BRAIN_API_KEY;
 const req = http.request("http://localhost:3200/api/v1/memory", {
   method: "POST",
-  headers: { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(queryData) },
+  headers: authHeaders,
   timeout: 5000
 }, (res) => {
   let body = "";

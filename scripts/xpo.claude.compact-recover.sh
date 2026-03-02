@@ -37,11 +37,13 @@ fi
 # Query brain for role recovery
 RECOVERY=$(curl -s --max-time 10 -X POST "$BRAIN_URL" \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer ${BRAIN_API_KEY:-}" \
   -d "{\"prompt\": \"Recovery after context compaction for ${ROLE} agent. Role definition, current responsibilities, active task state, and key operational rules.\", \"agent_id\": \"${AGENT_ID}\", \"agent_name\": \"${AGENT_NAME}\", \"session_id\": \"${SESSION_ID}\", \"read_only\": true}" 2>/dev/null)
 
 # Query brain for current task state
 TASKS=$(curl -s --max-time 10 -X POST "$BRAIN_URL" \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer ${BRAIN_API_KEY:-}" \
   -d "{\"prompt\": \"Current task state, in-flight work, and recent decisions across all projects for ${ROLE} agent\", \"agent_id\": \"${AGENT_ID}\", \"agent_name\": \"${AGENT_NAME}\", \"session_id\": \"${SESSION_ID}\", \"read_only\": true}" 2>/dev/null)
 
 # Extract source content previews (top 3 from each query)
