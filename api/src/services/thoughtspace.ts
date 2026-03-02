@@ -140,6 +140,7 @@ export interface RetrieveResult {
   tags: string[];
   refined_by?: string;
   superseded?: boolean;
+  superseded_by_consolidation?: boolean;
   // Brain contribution quality fields
   thought_category?: ThoughtCategory;
   topic?: string;
@@ -225,10 +226,12 @@ export async function think(params: ThinkParams): Promise<ThinkResult> {
     contributor_id: params.contributor_id,
     contributor_name: params.contributor_name,
     content: params.content,
-    context_metadata: params.context_metadata ?? null,
-    created_at: now,
     thought_type: params.thought_type,
     source_ids: params.source_ids,
+    superseded_by_consolidation: false,
+    superseded_by_correction: false,
+    context_metadata: params.context_metadata ?? null,
+    created_at: now,
     tags: params.tags,
     access_count: 0,
     last_accessed: null,
@@ -247,7 +250,6 @@ export async function think(params: ThinkParams): Promise<ThinkResult> {
     // Correction-specific fields
     corrected_fact: params.corrected_fact ?? null,
     correct_fact: params.correct_fact ?? null,
-    superseded_by_correction: false,
   };
 
   try {
@@ -270,6 +272,21 @@ export async function think(params: ThinkParams): Promise<ThinkResult> {
         });
       } catch (err) {
         console.error(`Failed to mark thought ${supersededId} as superseded by correction:`, err);
+      }
+    }
+  }
+
+  // Consolidation: mark source_ids as superseded_by_consolidation
+  if (params.thought_type === "consolidation" && params.source_ids && params.source_ids.length > 0) {
+    for (const sourceId of params.source_ids) {
+      try {
+        await client.setPayload(COLLECTION, {
+          points: [sourceId],
+          payload: { superseded_by_consolidation: true },
+          wait: true,
+        });
+      } catch (err) {
+        console.error(`Failed to mark thought ${sourceId} as superseded by consolidation:`, err);
       }
     }
   }
@@ -420,6 +437,13 @@ export async function retrieve(params: RetrieveParams): Promise<RetrieveResult[]
       if (thoughtPayload.superseded_by_correction === true) {
         m.score *= SCORING_CONFIG.supersededByCorrection;
         m.superseded = true;
+      }
+
+      // Penalty for consolidation-superseded thoughts
+      if (thoughtPayload.superseded_by_consolidation === true) {
+        m.score *= SCORING_CONFIG.supersededByConsolidation;
+        m.superseded = true;
+        m.superseded_by_consolidation = true;
       }
 
       // Boost for correction thoughts
