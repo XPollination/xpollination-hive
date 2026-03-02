@@ -35,6 +35,19 @@ function initSchema(db: Database.Database): void {
     CREATE INDEX IF NOT EXISTS idx_query_log_agent ON query_log(agent_id);
     CREATE INDEX IF NOT EXISTS idx_query_log_session ON query_log(session_id);
     CREATE INDEX IF NOT EXISTS idx_query_log_timestamp ON query_log(timestamp);
+
+    CREATE TABLE IF NOT EXISTS users (
+      user_id TEXT PRIMARY KEY,
+      display_name TEXT NOT NULL,
+      api_key TEXT NOT NULL UNIQUE,
+      ssh_fingerprint TEXT,
+      qdrant_collection TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      active INTEGER NOT NULL DEFAULT 1
+    );
+
+    INSERT OR IGNORE INTO users (user_id, display_name, api_key, qdrant_collection)
+    VALUES ('thomas', 'Thomas Pichler', 'default-thomas-key', 'thought_space');
   `);
 }
 

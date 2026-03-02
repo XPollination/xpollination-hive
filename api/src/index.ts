@@ -12,10 +12,13 @@ import { ingestRoutes } from "./routes/ingest.js";
 import { healthRoutes } from "./routes/health.js";
 import { memoryRoutes } from "./routes/memory.js";
 import { startMcpServer } from "./mcp/brain-mcp.js";
+import { authHook } from "./middleware/auth.js";
 
 const app = Fastify({ logger: true });
 
 await app.register(cors, { origin: true });
+
+app.addHook("onRequest", authHook);
 
 await app.register(queryRoutes);
 await app.register(ingestRoutes);
